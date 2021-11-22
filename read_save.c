@@ -52,6 +52,7 @@ int  *fs_len_x_y(char const *filepath)
         free(buffer);
         close(fd);
     }
+    printf("X: %d Y: %d\n", x_y[0], x_y[1]);
     return (x_y);
 }
 
@@ -67,6 +68,7 @@ char **fs_save(char const *filepath)
     if (!fs_open_file(filepath)) {
         fd = open(filepath, O_RDONLY);
         while (y < x_y[1]) {
+            printf("x_y: %d\n", x_y[0]);
             x_y_axis[y] = malloc(sizeof(char) * x_y[0] + 2);
             x = 0;
             while (x <= x_y[0]) {
@@ -92,7 +94,7 @@ int check_bsq(char **map, int *information)
     int size_y = y + information[2];
     int size_x = x + information[2];
 
-    while (y < size_y + 1) {
+    while (y < size_y) {
         x = information[0];
         while (x < size_x) {
             if (map[y] == NULL || map[y][x] == 'o' || map[y][x] == '\0') 
@@ -118,13 +120,17 @@ int *find_square(char **map)
     while (map[y] != NULL) {
         information2[0] = 0;
         information2[1] = y;
-        information2[2] = 1;
+        information2[2] = 0;
         x = 0;
         while (map[y][x] != '\0') {
             while (check_bsq(map, information2) == 0) {
                 information2[2]++;
             }
+            printf("size2: %d\n", information2[2]);
+            information2[2]--;
+            //printf("X: %d Y: %d Inf1: %d Inf2: %d\n", information1[0], information1[1], information1[2], information2[2]);
             if (information2[2] > information1[2]) {
+                printf("size1: %d < size2: %d\n", information1[2], information2[2]);
                 information1[0] = x;
                 information1[1] = y;
                 information1[2] = information2[2];
@@ -137,6 +143,11 @@ int *find_square(char **map)
         y++;
     }
     free(information2);
+    //information1[2] = information1[2] - 1;
+    printf("X:%d \n", information1[0]);
+    printf("Y:%d\n", information1[1]);
+    printf("Size:%d\n", information1[2]);
+
     return (information1);
 }
 
@@ -148,9 +159,9 @@ char **draw_square (char **map, int *information)
     int size_x = x + information[2];
 
     while (y < size_y) {
-        x = information[0] -1;
+        x = information[0];
         while (x < size_x) {
-            map[y][x] = 'X';
+            map[y][x] = 'x';
             x++;
         }
         y++;
@@ -160,7 +171,24 @@ char **draw_square (char **map, int *information)
 
 int main ()
 {
-    char filepath[] = "map2.txt";
+    
+    char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_filled";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_25pc";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_50pc";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_75pc";   
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_97_21_empty";   
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_97_21_filled";   
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_100_100";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_200_200";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_500_500";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_500_500_2";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_500_500_3";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_500_500";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty"; 
+    
     char **map = fs_save(filepath);
     int *information = malloc(sizeof(int) * 4);
     int i = 0;
@@ -171,6 +199,7 @@ int main ()
         i++;
     }
     printf("\n");
+    free(information);
     free(map);
     return (0);
 }

@@ -14,14 +14,35 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
+
+void function_cs(char *str)
+{
+    int i = 0;
+    int copy = 0;
+
+    while (str[i] != '\0'){
+        if (str[i] < 32 || str[i] > 127) {
+            printf("/");
+            copy = str[i];
+            while (copy < 100) {
+                copy *= 10;
+                printf("%c", '0');
+            }
+            printf("%o", str[i]);
+        } else
+            printf("%c", str[i]);
+        i++;
+    }
+}
+
 int fs_open_file(char const *filepath)
 {
     if (open(filepath, O_RDONLY) != -1) {
-        printf("SUCCESS\n");
+        //printf("SUCCESS\n");
         return (0);
     }
     else {
-        printf("FALIURE\n");
+        //printf("FALIURE\n");
         return (1);
     }
 }
@@ -42,19 +63,20 @@ int  *fs_len_x_y(char const *filepath)
             x_y[0] = 0;
             while (buffer[0] != '\n' && size != 0) {
                 size = read(fd, buffer, 1);
-
                 x_y[0] += 1;
             }
             x_y[1] += 1;
             size = read(fd, buffer, 1);
-            
+            //if (size == -1)
+                //printf("ERROR");
         }
         free(buffer);
         close(fd);
     }
-    printf("X: %d Y: %d\n", x_y[0], x_y[1]);
+    //printf("X: %d Y: %d\n", x_y[0], x_y[1]);
     return (x_y);
 }
+//OK
 
 char **fs_save(char const *filepath)
 {
@@ -68,15 +90,19 @@ char **fs_save(char const *filepath)
     if (!fs_open_file(filepath)) {
         fd = open(filepath, O_RDONLY);
         while (y < x_y[1]) {
-            printf("x_y: %d\n", x_y[0]);
+            //printf("x_y: %d\n", x_y[0]);
             x_y_axis[y] = malloc(sizeof(char) * x_y[0] + 2);
             x = 0;
             while (x <= x_y[0]) {
                 read(fd, buffer, 1);
+                if (buffer[0] != '.' && buffer[0] != 'o') {
+                    printf("Syntax Error");
+                    
+                }
                 x_y_axis[y][x] = buffer[0];
                 x++;
             }
-            x_y_axis[y][x] = '\0';
+            x_y_axis[y][x - 1] = '\0';
             y++;
         }
         x_y_axis[y] = NULL;
@@ -116,38 +142,32 @@ int *find_square(char **map)
 
     information1[0] = 0;
     information1[1] = 0;
-    information1[2] = 1;
+    information1[2] = 0;
     while (map[y] != NULL) {
         information2[0] = 0;
         information2[1] = y;
-        information2[2] = 0;
+        information2[2] = 1;
         x = 0;
         while (map[y][x] != '\0') {
             while (check_bsq(map, information2) == 0) {
                 information2[2]++;
             }
-            printf("size2: %d\n", information2[2]);
             information2[2]--;
-            //printf("X: %d Y: %d Inf1: %d Inf2: %d\n", information1[0], information1[1], information1[2], information2[2]);
             if (information2[2] > information1[2]) {
-                printf("size1: %d < size2: %d\n", information1[2], information2[2]);
                 information1[0] = x;
                 information1[1] = y;
                 information1[2] = information2[2];
             } else {
                 information2[0] = x;
-                information2[2] = 0;
+                information2[2] = 1;
             }
             x++;
         }
         y++;
     }
     free(information2);
-    //information1[2] = information1[2] - 1;
-    printf("X:%d \n", information1[0]);
-    printf("Y:%d\n", information1[1]);
-    printf("Size:%d\n", information1[2]);
-
+    if(information1[0] > 0)
+        information1[0] = information1[0] - 1;
     return (information1);
 }
 
@@ -157,6 +177,7 @@ char **draw_square (char **map, int *information)
     int y = information[1];
     int size_y = y + information[2];
     int size_x = x + information[2];
+
 
     while (y < size_y) {
         x = information[0];
@@ -171,33 +192,58 @@ char **draw_square (char **map, int *information)
 
 int main ()
 {
-    
-    char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_filled";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_25pc";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_50pc";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_75pc";   
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_97_21_empty";   
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_97_21_filled";   
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_100_100";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_200_200";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_500_500";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_500_500_2";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_500_500_3";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_500_500";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty"; 
-    
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";                     //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_filled";                    //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_25pc";       //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_50pc";       //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_75pc";       //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_97_21_empty";                      //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_97_21_filled";                     //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_97_21_with_obstacles_25pc";        //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_97_21_with_obstacles_50pc";        //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_97_21_with_obstacles_75pc";        //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_100_100";                          //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_187_187_empty";                    //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_187_187_filled";                   //OK 
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_187_187_with_obstacles_25pc";      //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_187_187_with_obstacles_50pc";      //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_187_187_with_obstacles_75pc";      //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_200_200";                          //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_500_500";                          //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_500_500_2";                        //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_500_500_3";                        //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_1000_1000";                        //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_1000_1000_2";                      //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_2000_2000";                        //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_5000_5000";                        //OK too slow
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_10000_10000";                      //OK BUT TOO SLOW 2:43min
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_empty_corners";                    //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_filled_corners";                   //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_column_with_obstacles_25pc";   //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_column_with_obstacles_50pc";   //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_column_with_obstacles_75pc";   //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_empty_box";                    //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_empty_column";                 //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_empty_line";                   //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_filled_box";                   //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_filled_column";                //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_filled_line";                  //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_line_with_obstacles_25pc";     //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_line_with_obstacles_50pc";     //OK
+    char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_line_with_obstacles_75pc";     //OK
+
     char **map = fs_save(filepath);
     int *information = malloc(sizeof(int) * 4);
     int i = 0;
     information = find_square(map);
+    printf("x:%d y:%d\n", information[0], information[1]);
     map = draw_square(map, information);
     while (map[i] != NULL) {
-        printf("%s", map[i]);
+        printf("%s",map[i]);
         i++;
     }
+    
+
     printf("\n");
     free(information);
     free(map);

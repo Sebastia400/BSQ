@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <ctype.h>
 
 
 int get_rows(int fd)
@@ -24,7 +25,7 @@ int get_rows(int fd)
     int size = 1;
     
     size = read(fd, buffer, 1);
-    while (buffer[0] != '\n') {
+    while (buffer[0] != '\n' && isdigit(buffer[0])) {
         if(size != -1) {
             firstline[i] = buffer[0];
             i++;
@@ -35,6 +36,7 @@ int get_rows(int fd)
     }
     free(buffer);
     firstline[i] = '\0';
+    printf("%s", firstline);
     if(!atoi(firstline)) 
         exit (84);
     return (atoi(firstline));
@@ -50,22 +52,19 @@ int fs_open_file(char const *filepath)
     }
 }
 
-int  *fs_len_x_y(char const *filepath)
+int  *fs_len_x_y(char const *filepath, int fd)
 {
-    int fd;
+    //int fd;
     int *x_y = malloc(sizeof(int) * 2 + 1);
-
     struct stat buf;
 
-    if (!fs_open_file(filepath)) {
-        fd = open(filepath, O_RDONLY);
-
-        stat(filepath, &buf);
-        printf("%lld\n", buf.st_size);
-
-        x_y[1] = get_rows(fd);
-        x_y[0] = (buf.st_size / x_y[1]) - 1;
-    }
+    //fd = open(filepath, O_RDONLY);
+    stat(filepath, &buf);
+    printf("%lld\n", buf.st_size);
+    x_y[1] = get_rows(fd);
+    printf("passa");
+    x_y[0] = (buf.st_size / x_y[1]) - 1;
+    printf("x:%d y:%d\n", x_y[0], x_y[1]);
     return (x_y);
 }
 
@@ -91,8 +90,8 @@ char *fs_save2(int fd, int *x_y, char *x_y_axis)
 
 char **fs_save(char const *filepath)
 {
-    int *x_y = fs_len_x_y(filepath);
-    char **x_y_axis = malloc(sizeof(char *) * x_y[1] + 2);
+    int *x_y = NULL; //fs_len_x_y(filepath);
+    char **x_y_axis = NULL; // malloc(sizeof(char *) * x_y[1] + 2);
     char *buffer = malloc(sizeof(char) * 1);
     int fd;
     int y = 0;
@@ -100,6 +99,7 @@ char **fs_save(char const *filepath)
     if (!fs_open_file(filepath)) {
         fd = open(filepath, O_RDONLY);
         get_rows(fd);
+        x_y = fs_len_x_y(filepath, fd);
         while (y < x_y[1]) {
             x_y_axis[y] = malloc(sizeof(char) * x_y[0] + 2);
             fs_save2(fd, x_y, x_y_axis[y]);
@@ -190,7 +190,7 @@ char **draw_square (char **map, int *information)
 
 int main ()
 {
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";                     //OK
+    char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";                     //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_filled";                    //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_25pc";       //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_50pc";       //OK
@@ -214,7 +214,7 @@ int main ()
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_1000_1000_2";                      //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_2000_2000";                        //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_5000_5000";                        //OK too slow
-    char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_10000_10000";                      //OK BUT TOO SLOW 2:43min
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_10000_10000";                      //OK BUT TOO SLOW 2:43min
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_empty_corners";                    //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_filled_corners";                   //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_column_with_obstacles_25pc";   //OK

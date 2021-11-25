@@ -13,8 +13,6 @@
 #include <stddef.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-
 
 int get_rows(int fd)
 {
@@ -46,26 +44,33 @@ int fs_open_file(char const *filepath)
         return (0);
     }
     else {
+        printf("ERROR");
         exit (84);
     }
 }
 
-int  *fs_len_x_y(char const *filepath)
+int  *fs_len_x_y(int fd)
 {
-    int fd;
+    char *buffer = malloc(sizeof(char) * 1);
     int *x_y = malloc(sizeof(int) * 2 + 1);
+    int size = 1;
+    int y = 0;
 
-    struct stat buf;
-
-    if (!fs_open_file(filepath)) {
-        fd = open(filepath, O_RDONLY);
-
-        stat(filepath, &buf);
-        printf("%lld\n", buf.st_size);
-
-        x_y[1] = get_rows(fd);
-        x_y[0] = (buf.st_size / x_y[1]) - 1;
+    x_y[0] = 0;
+    x_y[1] = get_rows(fd);
+    while (y <= 1) {
+        x_y[0] = 0;
+        while (buffer[0] != '\n' && size != 0) {
+            size = read(fd, buffer, 1);
+            x_y[0] += 1;
+        }
+        y ++;;
+        size = read(fd, buffer, 1);
+        if (size == -1)
+            exit (84);
     }
+    free(buffer);
+    
     return (x_y);
 }
 
@@ -91,14 +96,17 @@ char *fs_save2(int fd, int *x_y, char *x_y_axis)
 
 char **fs_save(char const *filepath)
 {
-    int *x_y = fs_len_x_y(filepath);
-    char **x_y_axis = malloc(sizeof(char *) * x_y[1] + 2);
+    int *x_y = NULL;
+    char **x_y_axis = NULL; //= malloc(sizeof(char *) * x_y[1] + 2);
     char *buffer = malloc(sizeof(char) * 1);
     int fd;
     int y = 0;
 
     if (!fs_open_file(filepath)) {
         fd = open(filepath, O_RDONLY);
+        printf("%d\n", fd);
+        x_y = fs_len_x_y(fd);
+        x_y_axis = malloc(sizeof(char *) * x_y[1] + 2);
         get_rows(fd);
         while (y < x_y[1]) {
             x_y_axis[y] = malloc(sizeof(char) * x_y[0] + 2);
@@ -190,7 +198,7 @@ char **draw_square (char **map, int *information)
 
 int main ()
 {
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";                     //OK
+    char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";                     //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_filled";                    //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_25pc";       //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_50pc";       //OK
@@ -214,7 +222,7 @@ int main ()
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_1000_1000_2";                      //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_2000_2000";                        //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_5000_5000";                        //OK too slow
-    char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_10000_10000";                      //OK BUT TOO SLOW 2:43min
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_10000_10000";                      //OK BUT TOO SLOW 2:43min
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_empty_corners";                    //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_filled_corners";                   //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_column_with_obstacles_25pc";   //OK
@@ -229,8 +237,8 @@ int main ()
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_line_with_obstacles_25pc";     //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_line_with_obstacles_50pc";     //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_line_with_obstacles_75pc";     //OK
-
     char **map = fs_save(filepath);
+    printf("em\n");
     int *information = malloc(sizeof(int) * 4);
     int i = 0;
     information = find_square(map);

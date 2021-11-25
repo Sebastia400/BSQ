@@ -23,7 +23,7 @@ int get_rows(int fd)
     char *firstline = malloc(sizeof(char) * 10);
     int i = 0;
     int size = 1;
-    
+
     size = read(fd, buffer, 1);
     while (buffer[0] != '\n' && isdigit(buffer[0])) {
         if(size != -1) {
@@ -31,13 +31,12 @@ int get_rows(int fd)
             i++;
             size = read(fd, buffer, 1);
         }
-        else 
+        else
             exit (84);
     }
     free(buffer);
     firstline[i] = '\0';
-    printf("%s", firstline);
-    if(!atoi(firstline)) 
+    if(!atoi(firstline))
         exit (84);
     return (atoi(firstline));
 }
@@ -54,17 +53,14 @@ int fs_open_file(char const *filepath)
 
 int  *fs_len_x_y(char const *filepath, int fd)
 {
-    //int fd;
     int *x_y = malloc(sizeof(int) * 2 + 1);
     struct stat buf;
 
-    //fd = open(filepath, O_RDONLY);
     stat(filepath, &buf);
-    printf("%lld\n", buf.st_size);
     x_y[1] = get_rows(fd);
-    printf("passa");
     x_y[0] = (buf.st_size / x_y[1]) - 1;
-    printf("x:%d y:%d\n", x_y[0], x_y[1]);
+    if (x_y[1] == 1)
+        x_y[0] -= 2;
     return (x_y);
 }
 
@@ -75,33 +71,30 @@ char *fs_save2(int fd, int *x_y, char *x_y_axis)
 
     while (x <= x_y[0]) {
         read(fd, buffer, 1);
-        if ((buffer[0] == '\n' || buffer[0] == '\0') && x != x_y[0]) {
-            exit (84);
-        }
         if ((buffer[0] != '.' && buffer[0] != 'o') && buffer[0] != '\n') {
             exit (84);
         }
         x_y_axis[x] = buffer[0];
         x++;
-    }       
+    }
     x_y_axis[x - 1] = '\0';
     return (x_y_axis);
 }
 
 char **fs_save(char const *filepath)
 {
-    int *x_y = NULL; //fs_len_x_y(filepath);
-    char **x_y_axis = NULL; // malloc(sizeof(char *) * x_y[1] + 2);
+    int *x_y = NULL;
+    char **x_y_axis = NULL;
     char *buffer = malloc(sizeof(char) * 1);
     int fd;
     int y = 0;
 
     if (!fs_open_file(filepath)) {
         fd = open(filepath, O_RDONLY);
-        get_rows(fd);
         x_y = fs_len_x_y(filepath, fd);
+        x_y_axis = malloc(sizeof(char *) * x_y[1] + 2);
         while (y < x_y[1]) {
-            x_y_axis[y] = malloc(sizeof(char) * x_y[0] + 2);
+            x_y_axis[y] = malloc(sizeof(char) * x_y[0] + 1);
             fs_save2(fd, x_y, x_y_axis[y]);
             y++;
         }
@@ -123,7 +116,7 @@ int check_bsq(char **map, int *information)
     while (y < size_y) {
         x = information[0];
         while (x < size_x) {
-            if (map[y] == NULL || map[y][x] == 'o' || map[y][x] == '\0') 
+            if (map[y] == NULL || map[y][x] == 'o' || map[y][x] == '\0')
                 return (1);
             x++;
         }
@@ -156,7 +149,7 @@ int *find_square(char **map)
             while (check_bsq(map, information2) == 0)
                 information2[2]++;
             information2[2]--;
-            if (information2[2] > information1[2]) 
+            if (information2[2] > information1[2])
                 information1 = save_information(information2);
             else
                 information2[2] = 1;
@@ -165,13 +158,11 @@ int *find_square(char **map)
         information2[1]++;
     }
     free(information2);
-    /*if(information1[0] > 0)
-        information1[0] = information1[0] - 1;*/
     return (information1);
 }
 
 char **draw_square (char **map, int *information)
-{   
+{
     int x = information[0];
     int y = information[1];
     int size_y = y + information[2];
@@ -190,7 +181,7 @@ char **draw_square (char **map, int *information)
 
 int main ()
 {
-    char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";                     //OK
+    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_empty";                     //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_filled";                    //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_25pc";       //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_34_137_with_obstacles_50pc";       //OK
@@ -228,7 +219,7 @@ int main ()
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_filled_line";                  //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_line_with_obstacles_25pc";     //OK
     //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_line_with_obstacles_50pc";     //OK
-    //char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_line_with_obstacles_75pc";     //OK
+    char filepath[] = "./maps-intermediate/mouli_maps/intermediate_map_one_line_with_obstacles_75pc";     //OK
 
     char **map = fs_save(filepath);
     int *information = malloc(sizeof(int) * 4);

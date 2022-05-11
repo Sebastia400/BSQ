@@ -5,18 +5,15 @@
 ## description
 ##
 
-OBJ = $(SRCS_C:.c=.o)
+OBJ = $(SRC:.c=.o)
 
-LIB = -L./lib/my -lmy
-
-SRC		=	 sources/
-
-SRC_C	=	bsq.c					\
-			bsq_2.c					\
+SRC	=		main.c					\
+			save_map.c				\
+			map_size.c				\
+			find_bsq.c				\
+			print_map.c				\
 			my_getnbr.c				\
 			my_strlen.c
-			
-SRCS_C	= 	$(addprefix $(SRC), $(SRC_C))
 
 CFLAGS = -I./include
 
